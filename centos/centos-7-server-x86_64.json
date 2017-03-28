@@ -1,0 +1,51 @@
+{
+    "variables": {
+        "user": "centos",
+        "password": "centos",
+        "disk_size": "40000"
+    },
+
+    "builders":
+    [
+        {
+            "name": "centos-7-x86_64-server",
+
+            "type": "qemu",
+            "format": "qcow2",
+            "accelerator": "kvm",
+            "headless": true,
+            "qemuargs": [
+                [ "-m", "8192M" ],
+                [ "-smp", "8"]
+            ],
+
+            "disk_size": "{{ user `disk_size`}}",
+
+            "iso_url": "http://ftp-stud.fht-esslingen.de/pub/Mirrors/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso",
+            "iso_checksum": "88c0437f0a14c6e2c94426df9d43cd67",
+            "iso_checksum_type": "md5",
+
+            "http_directory": "http-centos7",
+
+            "ssh_username": "{{user `user`}}",
+            "ssh_password": "{{user `password`}}",
+            "ssh_wait_timeout": "20m",
+            "shutdown_command": "echo '{{user `password`}}'|sudo -S shutdown -P now",
+
+            "boot_wait": "2s",
+            "boot_command": [
+                "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter>"
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/update.sh"
+            ]
+        }
+    ]
+}
